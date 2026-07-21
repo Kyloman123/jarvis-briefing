@@ -86,5 +86,5 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = 8765
-    print(f"Jarvis Briefing running at http://127.0.0.1:{port}/personal-assistant.html")
+    print(f"Jarvis Briefing running at http://127.0.0.1:{port}/")
     ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()

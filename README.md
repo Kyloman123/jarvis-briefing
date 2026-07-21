@@ -12,13 +12,13 @@ A personal command-center dashboard for:
 The local server enables live stock refresh through `/api/stocks`.
 
 ```bash
-python3 outputs/server.py
+python3 server.py
 ```
 
 Then open:
 
 ```text
-http://127.0.0.1:8765/personal-assistant.html
+http://127.0.0.1:8765/
 ```
 
 ## Host On GitHub Pages
@@ -57,6 +57,6 @@ Paste the OAuth Client ID into **Sources** in the app, then click **Connect Gmai
 
 ## Hosted Stock Refresh Note
 
-GitHub Pages is static hosting, so it cannot run `outputs/server.py`.
+GitHub Pages is static hosting, so it cannot run `server.py`.
 
 Live stock refresh works locally through the Python server. On GitHub Pages, the app will keep showing saved/fallback stock data unless you connect a hosted API proxy later.
