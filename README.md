@@ -21,6 +21,12 @@ Then open:
 http://127.0.0.1:8765/
 ```
 
+If port `8765` is already in use, choose another port:
+
+```bash
+python3 server.py --port 8770
+```
+
 ## Host On GitHub Pages
 
 GitHub Pages can host the static app from `index.html`.

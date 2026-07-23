@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import json
 import pathlib
@@ -9,6 +10,18 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 
 ROOT = pathlib.Path(__file__).resolve().parent
+DEFAULT_PORT = 8765
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run the Jarvis Briefing local server.")
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=DEFAULT_PORT,
+        help=f"Local port to serve on. Defaults to {DEFAULT_PORT}.",
+    )
+    return parser.parse_args()
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -85,6 +98,6 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    port = 8765
-    print(f"Jarvis Briefing running at http://127.0.0.1:{port}/")
-    ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+    args = parse_args()
+    print(f"Jarvis Briefing running at http://127.0.0.1:{args.port}/")
+    ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
