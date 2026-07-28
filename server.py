@@ -13,11 +13,21 @@ ROOT = pathlib.Path(__file__).resolve().parent
 DEFAULT_PORT = 8765
 
 
+def valid_port(value):
+    try:
+        port = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("port must be an integer") from exc
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError("port must be between 1 and 65535")
+    return port
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Run the Jarvis Briefing local server.")
     parser.add_argument(
         "--port",
-        type=int,
+        type=valid_port,
         default=DEFAULT_PORT,
         help=f"Local port to serve on. Defaults to {DEFAULT_PORT}.",
     )
