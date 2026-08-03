@@ -27,6 +27,12 @@ If port `8765` is already in use, choose another port:
 python3 server.py --port 8770
 ```
 
+Check the local server health endpoint:
+
+```text
+http://127.0.0.1:8765/api/health
+```
+
 ## Host On GitHub Pages
 
 GitHub Pages can host the static app from `index.html`.

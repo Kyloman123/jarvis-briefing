@@ -40,6 +40,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path == "/api/health":
+            self.send_json({"status": "ok"})
+            return
         if parsed.path == "/api/stocks":
             self.handle_stocks(parsed)
             return
