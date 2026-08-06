@@ -3,6 +3,7 @@ import argparse
 import csv
 import json
 import pathlib
+import re
 import time
 import urllib.parse
 import urllib.request
@@ -11,6 +12,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = pathlib.Path(__file__).resolve().parent
 DEFAULT_PORT = 8765
+MAX_STOCK_SYMBOLS = 20
+STOCK_SYMBOL_RE = re.compile(r"^[A-Z0-9.^=-]{1,24}$")
 
 
 def valid_port(value):
@@ -34,6 +37,28 @@ def parse_args():
     return parser.parse_args()
 
 
+def parse_stock_symbols(raw_symbols):
+    clean_symbols = [
+        symbol.strip().upper()
+        for symbol in raw_symbols.split(",")
+        if symbol.strip()
+    ]
+    if not clean_symbols:
+        raise ValueError("No symbols provided")
+    if len(clean_symbols) > MAX_STOCK_SYMBOLS:
+        raise ValueError(f"Too many symbols provided; maximum is {MAX_STOCK_SYMBOLS}")
+
+    invalid_symbols = [
+        symbol for symbol in clean_symbols
+        if not STOCK_SYMBOL_RE.fullmatch(symbol)
+    ]
+    if invalid_symbols:
+        raise ValueError(
+            "Invalid stock symbol format: " + ", ".join(invalid_symbols)
+        )
+    return clean_symbols
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -51,13 +76,10 @@ class Handler(SimpleHTTPRequestHandler):
     def handle_stocks(self, parsed):
         params = urllib.parse.parse_qs(parsed.query)
         symbols = params.get("symbols", [""])[0]
-        clean_symbols = [
-            symbol.strip().upper()
-            for symbol in symbols.split(",")
-            if symbol.strip()
-        ]
-        if not clean_symbols:
-            self.send_json({"error": "No symbols provided"}, status=400)
+        try:
+            clean_symbols = parse_stock_symbols(symbols)
+        except ValueError as exc:
+            self.send_json({"error": str(exc)}, status=400)
             return
 
         try:
