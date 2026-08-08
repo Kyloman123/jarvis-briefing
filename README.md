@@ -33,6 +33,14 @@ Check the local server health endpoint:
 http://127.0.0.1:8765/api/health
 ```
 
+## Smoke Check
+
+Run the non-network smoke check after setup to verify server option and stock-symbol validation:
+
+```bash
+python3 smoke_test.py
+```
+
 ## Host On GitHub Pages
 
 GitHub Pages can host the static app from `index.html`.
