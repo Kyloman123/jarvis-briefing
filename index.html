@@ -951,7 +951,24 @@
       lastEmailRefresh: ""
     };
 
-    const state = JSON.parse(localStorage.getItem(storageKey)) || structuredClone(demo);
+    function loadState() {
+      const savedState = localStorage.getItem(storageKey);
+      if (!savedState) return structuredClone(demo);
+
+      try {
+        const parsedState = JSON.parse(savedState);
+        if (!parsedState || Array.isArray(parsedState) || typeof parsedState !== "object") {
+          throw new Error("Saved state is not an object.");
+        }
+        return parsedState;
+      } catch (error) {
+        console.warn("Resetting unreadable saved dashboard state.", error);
+        localStorage.removeItem(storageKey);
+        return structuredClone(demo);
+      }
+    }
+
+    const state = loadState();
     state.tasks ||= [];
     state.notes ||= [];
     state.scratchpad ||= "";
