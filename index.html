@@ -1030,7 +1030,16 @@
     let gmailTokenClient = null;
 
     function save() {
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+        return true;
+      } catch (error) {
+        console.warn("Dashboard state could not be saved.", error);
+        if (els.sourceStatus) {
+          setSourceStatus("Changes are active, but browser storage could not save them.", true);
+        }
+        return false;
+      }
     }
 
     function escapeHtml(value) {
