@@ -1238,6 +1238,11 @@
       return text.split("\n").map(line => line.trim()).filter(Boolean).map(line => mapper(line.split("|").map(part => part.trim())));
     }
 
+    function normalizeEmailPriority(priority) {
+      const normalized = String(priority || "").toLowerCase();
+      return ["urgent", "high", "medium", "low"].includes(normalized) ? normalized : "medium";
+    }
+
     function setSourceStatus(message, isWarning = false) {
       els.sourceStatus.textContent = message;
       els.sourceStatus.classList.toggle("warning", isWarning);
@@ -1531,7 +1536,7 @@
         id: uid(),
         from: from || "Unknown",
         subject: subject || "Untitled email",
-        priority: priority || "medium",
+        priority: normalizeEmailPriority(priority),
         summary: summary || ""
       }));
       state.news = parseLines(els.newsInput.value, ([source, title, impact, summary]) => ({
