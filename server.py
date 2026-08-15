@@ -38,13 +38,15 @@ def parse_args():
 
 
 def parse_stock_symbols(raw_symbols):
-    clean_symbols = [
+    requested_symbols = [
         symbol.strip().upper()
         for symbol in raw_symbols.split(",")
         if symbol.strip()
     ]
-    if not clean_symbols:
+    if not requested_symbols:
         raise ValueError("No symbols provided")
+
+    clean_symbols = list(dict.fromkeys(requested_symbols))
     if len(clean_symbols) > MAX_STOCK_SYMBOLS:
         raise ValueError(f"Too many symbols provided; maximum is {MAX_STOCK_SYMBOLS}")
 

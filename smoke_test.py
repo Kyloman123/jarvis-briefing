@@ -38,9 +38,10 @@ def main() -> None:
         "BRK-B",
         "^GSPC",
     ]
+    assert parse_stock_symbols("aapl, AAPL, msft") == ["AAPL", "MSFT"]
     assert_value_error(parse_stock_symbols, "", "No symbols provided")
     assert_value_error(parse_stock_symbols, "AAPL,$BAD", "Invalid stock symbol")
-    too_many_symbols = ",".join(["AAPL"] * (MAX_STOCK_SYMBOLS + 1))
+    too_many_symbols = ",".join(f"TICK{i}" for i in range(MAX_STOCK_SYMBOLS + 1))
     assert_value_error(parse_stock_symbols, too_many_symbols, "Too many symbols")
 
     print("Smoke checks passed.")
