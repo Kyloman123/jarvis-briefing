@@ -33,6 +33,14 @@ Check the local server health endpoint:
 http://127.0.0.1:8765/api/health
 ```
 
+Fetch live watchlist data from the local stock endpoint:
+
+```text
+http://127.0.0.1:8765/api/stocks?symbols=AAPL,NVDA,MSFT
+```
+
+Symbols are normalized to uppercase, duplicates are removed, and requests are limited to 20 symbols.
+
 ## Smoke Check
 
 Run the non-network smoke check after setup to verify server option and stock-symbol validation:
