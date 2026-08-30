@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import argparse
 
-from server import MAX_STOCK_SYMBOLS, parse_stock_symbols, valid_port
+from server import (
+    MAX_STOCK_SYMBOLS,
+    parse_stock_symbols,
+    stock_row_from_chart,
+    valid_port,
+)
 
 
 def assert_argparse_error(func, value: str, expected_message: str) -> None:
@@ -27,6 +32,20 @@ def assert_value_error(func, value: str, expected_message: str) -> None:
         raise AssertionError(f"Expected {value!r} to fail validation.")
 
 
+def assert_formats_stock_row() -> None:
+    result = {
+        "meta": {"symbol": "msft", "shortName": "Microsoft"},
+        "indicators": {"quote": [{"close": [99.0, None, 101.0]}]},
+    }
+    assert stock_row_from_chart(result, "MSFT") == {
+        "symbol": "MSFT",
+        "name": "Microsoft",
+        "price": "101.00",
+        "change": "+2.02%",
+        "updated": "",
+    }
+
+
 def main() -> None:
     assert valid_port("8765") == 8765
     assert_argparse_error(valid_port, "0", "between 1 and 65535")
@@ -43,6 +62,7 @@ def main() -> None:
     assert_value_error(parse_stock_symbols, "AAPL,$BAD", "Invalid stock symbol")
     too_many_symbols = ",".join(f"TICK{i}" for i in range(MAX_STOCK_SYMBOLS + 1))
     assert_value_error(parse_stock_symbols, too_many_symbols, "Too many symbols")
+    assert_formats_stock_row()
 
     print("Smoke checks passed.")
 

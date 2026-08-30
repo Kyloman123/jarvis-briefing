@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import csv
 import json
 import pathlib
 import re
@@ -61,6 +60,41 @@ def parse_stock_symbols(raw_symbols):
     return clean_symbols
 
 
+def stock_row_from_chart(result, fallback_symbol):
+    meta = result.get("meta", {})
+    quote = ((result.get("indicators", {}).get("quote") or [{}])[0])
+    closes = [
+        value for value in quote.get("close", [])
+        if isinstance(value, (int, float))
+    ]
+    current = meta.get("regularMarketPrice")
+    previous = meta.get("previousClose")
+    if current is None and closes:
+        current = closes[-1]
+    if previous is None and len(closes) > 1:
+        previous = closes[-2]
+
+    change_pct = 0
+    if current is not None and previous:
+        change_pct = ((current - previous) / previous) * 100
+
+    updated = ""
+    if meta.get("regularMarketTime"):
+        updated = time.strftime(
+            "%Y-%m-%d %H:%M",
+            time.localtime(meta["regularMarketTime"])
+        )
+
+    symbol = meta.get("symbol", fallback_symbol).upper()
+    return {
+        "symbol": symbol,
+        "name": meta.get("longName") or meta.get("shortName") or symbol,
+        "price": f"{current:.2f}" if isinstance(current, (int, float)) else "N/A",
+        "change": f"{change_pct:+.2f}%",
+        "updated": updated,
+    }
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -92,34 +126,7 @@ class Handler(SimpleHTTPRequestHandler):
                 with urllib.request.urlopen(request, timeout=12) as response:
                     payload = json.loads(response.read().decode("utf-8", errors="replace"))
                 result = (payload.get("chart", {}).get("result") or [{}])[0]
-                meta = result.get("meta", {})
-                quote = ((result.get("indicators", {}).get("quote") or [{}])[0])
-                closes = [
-                    value for value in quote.get("close", [])
-                    if isinstance(value, (int, float))
-                ]
-                current = meta.get("regularMarketPrice")
-                previous = meta.get("previousClose")
-                if current is None and closes:
-                    current = closes[-1]
-                if previous is None and len(closes) > 1:
-                    previous = closes[-2]
-                change_pct = 0
-                if current is not None and previous:
-                    change_pct = ((current - previous) / previous) * 100
-                updated = ""
-                if meta.get("regularMarketTime"):
-                    updated = time.strftime(
-                        "%Y-%m-%d %H:%M",
-                        time.localtime(meta["regularMarketTime"])
-                    )
-                stocks.append({
-                    "symbol": meta.get("symbol", symbol).upper(),
-                    "name": meta.get("longName") or meta.get("shortName") or symbol.upper(),
-                    "price": f"{current:.2f}" if isinstance(current, (int, float)) else "N/A",
-                    "change": f"{change_pct:+.2f}%",
-                    "updated": updated,
-                })
+                stocks.append(stock_row_from_chart(result, symbol))
             self.send_json({"stocks": stocks})
         except Exception as exc:
             self.send_json({"error": str(exc)}, status=502)
