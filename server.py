@@ -74,9 +74,10 @@ def stock_row_from_chart(result, fallback_symbol):
     if previous is None and len(closes) > 1:
         previous = closes[-2]
 
-    change_pct = 0
+    change = "N/A"
     if current is not None and previous:
         change_pct = ((current - previous) / previous) * 100
+        change = f"{change_pct:+.2f}%"
 
     updated = ""
     if meta.get("regularMarketTime"):
@@ -90,7 +91,7 @@ def stock_row_from_chart(result, fallback_symbol):
         "symbol": symbol,
         "name": meta.get("longName") or meta.get("shortName") or symbol,
         "price": f"{current:.2f}" if isinstance(current, (int, float)) else "N/A",
-        "change": f"{change_pct:+.2f}%",
+        "change": change,
         "updated": updated,
     }
 

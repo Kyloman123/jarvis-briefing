@@ -44,6 +44,13 @@ def assert_formats_stock_row() -> None:
         "change": "+2.02%",
         "updated": "",
     }
+    assert stock_row_from_chart({}, "MISSING") == {
+        "symbol": "MISSING",
+        "name": "MISSING",
+        "price": "N/A",
+        "change": "N/A",
+        "updated": "",
+    }
 
 
 def main() -> None:
