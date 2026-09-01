@@ -6,6 +6,7 @@ import argparse
 
 from server import (
     MAX_STOCK_SYMBOLS,
+    format_change_percent,
     parse_stock_symbols,
     stock_row_from_chart,
     valid_port,
@@ -53,6 +54,13 @@ def assert_formats_stock_row() -> None:
     }
 
 
+def assert_formats_change_percent() -> None:
+    assert format_change_percent(105, 100) == "+5.00%"
+    assert format_change_percent(95, 100) == "-5.00%"
+    assert format_change_percent(None, 100) == "N/A"
+    assert format_change_percent(100, 0) == "N/A"
+
+
 def main() -> None:
     assert valid_port("8765") == 8765
     assert_argparse_error(valid_port, "0", "between 1 and 65535")
@@ -69,6 +77,7 @@ def main() -> None:
     assert_value_error(parse_stock_symbols, "AAPL,$BAD", "Invalid stock symbol")
     too_many_symbols = ",".join(f"TICK{i}" for i in range(MAX_STOCK_SYMBOLS + 1))
     assert_value_error(parse_stock_symbols, too_many_symbols, "Too many symbols")
+    assert_formats_change_percent()
     assert_formats_stock_row()
 
     print("Smoke checks passed.")

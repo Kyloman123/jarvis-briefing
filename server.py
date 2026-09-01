@@ -60,6 +60,14 @@ def parse_stock_symbols(raw_symbols):
     return clean_symbols
 
 
+def format_change_percent(current, previous):
+    if not isinstance(current, (int, float)) or not isinstance(previous, (int, float)):
+        return "N/A"
+    if previous == 0:
+        return "N/A"
+    return f"{((current - previous) / previous) * 100:+.2f}%"
+
+
 def stock_row_from_chart(result, fallback_symbol):
     meta = result.get("meta", {})
     quote = ((result.get("indicators", {}).get("quote") or [{}])[0])
@@ -74,11 +82,6 @@ def stock_row_from_chart(result, fallback_symbol):
     if previous is None and len(closes) > 1:
         previous = closes[-2]
 
-    change = "N/A"
-    if current is not None and previous:
-        change_pct = ((current - previous) / previous) * 100
-        change = f"{change_pct:+.2f}%"
-
     updated = ""
     if meta.get("regularMarketTime"):
         updated = time.strftime(
@@ -91,7 +94,7 @@ def stock_row_from_chart(result, fallback_symbol):
         "symbol": symbol,
         "name": meta.get("longName") or meta.get("shortName") or symbol,
         "price": f"{current:.2f}" if isinstance(current, (int, float)) else "N/A",
-        "change": change,
+        "change": format_change_percent(current, previous),
         "updated": updated,
     }
 
