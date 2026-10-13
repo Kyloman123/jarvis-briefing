@@ -1258,7 +1258,8 @@
     }
 
     function symbolList() {
-      return state.stockSymbols.split(",").map(symbol => symbol.trim().toUpperCase()).filter(Boolean);
+      const symbols = state.stockSymbols.split(",").map(symbol => symbol.trim().toUpperCase()).filter(Boolean);
+      return [...new Set(symbols)];
     }
 
     function stooqSymbol(symbol) {
