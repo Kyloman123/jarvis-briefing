@@ -9,6 +9,7 @@ from server import (
     format_change_percent,
     parse_stock_symbols,
     stock_row_from_chart,
+    stock_row_from_payload,
     valid_port,
 )
 
@@ -54,6 +55,23 @@ def assert_formats_stock_row() -> None:
     }
 
 
+def assert_validates_stock_payload() -> None:
+    payload = {
+        "chart": {
+            "result": [{
+                "meta": {"symbol": "AAPL", "regularMarketPrice": 201.5},
+                "indicators": {"quote": [{"close": []}]},
+            }]
+        }
+    }
+    assert stock_row_from_payload(payload, "AAPL")["price"] == "201.50"
+    assert_value_error(
+        lambda unused: stock_row_from_payload({"chart": {"result": None}}, "BAD"),
+        "",
+        "Stock data unavailable for BAD",
+    )
+
+
 def assert_formats_change_percent() -> None:
     assert format_change_percent(105, 100) == "+5.00%"
     assert format_change_percent(95, 100) == "-5.00%"
@@ -79,6 +97,7 @@ def main() -> None:
     assert_value_error(parse_stock_symbols, too_many_symbols, "Too many symbols")
     assert_formats_change_percent()
     assert_formats_stock_row()
+    assert_validates_stock_payload()
 
     print("Smoke checks passed.")
 

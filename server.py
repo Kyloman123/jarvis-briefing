@@ -99,6 +99,14 @@ def stock_row_from_chart(result, fallback_symbol):
     }
 
 
+def stock_row_from_payload(payload, symbol):
+    chart = payload.get("chart") if isinstance(payload, dict) else None
+    results = chart.get("result") if isinstance(chart, dict) else None
+    if not isinstance(results, list) or not results or not isinstance(results[0], dict):
+        raise ValueError(f"Stock data unavailable for {symbol}")
+    return stock_row_from_chart(results[0], symbol)
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -129,11 +137,11 @@ class Handler(SimpleHTTPRequestHandler):
                 request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(request, timeout=12) as response:
                     payload = json.loads(response.read().decode("utf-8", errors="replace"))
-                result = (payload.get("chart", {}).get("result") or [{}])[0]
-                stocks.append(stock_row_from_chart(result, symbol))
+                stocks.append(stock_row_from_payload(payload, symbol))
             self.send_json({"stocks": stocks})
         except Exception as exc:
-            self.send_json({"error": str(exc)}, status=502)
+            self.log_error("Stock refresh failed: %s", exc)
+            self.send_json({"error": "Stock service is temporarily unavailable"}, status=502)
 
     def send_json(self, payload, status=200):
         encoded = json.dumps(payload).encode("utf-8")
